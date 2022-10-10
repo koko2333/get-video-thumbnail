@@ -9,6 +9,7 @@ interface Options {
   width?: number;
   height?: number;
   time?: number;
+  crossOrigin?: boolean;
 }
 
 export type {
