@@ -9,7 +9,7 @@ const getVideoThumbnail = (
   options = {
     ...{
       width: 1920,
-      time: 1000,
+      time: 1,
     },
     ...options,
   };
@@ -21,6 +21,7 @@ const getVideoThumbnail = (
   videoElement.style.height = height ? `${height}px` : "auto";
   videoElement.muted = true;
   videoElement.src = src;
+  videoElement.currentTime = time;
   videoElement.setAttribute("crossOrigin", "anonymous");
   document.body.appendChild(videoElement);
 
@@ -36,23 +37,22 @@ const getVideoThumbnail = (
       canvasElement.height = canvasElementHeight;
       const canvasFill = canvasElement.getContext("2d");
       videoElement.play().then(() => {
-        setTimeout(() => {
-          canvasFill.drawImage(
-            videoElement,
-            0,
-            0,
-            canvasElement.width,
-            canvasElement.height
-          );
-          /*把canvas变成图片*/
-          const imgSrc = canvasElement.toDataURL("image/jpeg");
-          resolve({
-            thumbnailSrc: imgSrc,
-            thumbnailTime: time,
-            thumbnailWidth: width + "px",
-            thumbnailHeight: canvasElementHeight + "px",
-          });
-        }, time);
+        canvasFill.drawImage(
+          videoElement,
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+        /*把canvas变成图片*/
+        const imgSrc = canvasElement.toDataURL("image/jpeg");
+        document.body.removeChild(videoElement);
+        resolve({
+          thumbnailSrc: imgSrc,
+          thumbnailTime: time,
+          thumbnailWidth: width + "px",
+          thumbnailHeight: canvasElementHeight + "px",
+        });
       });
     };
   });
