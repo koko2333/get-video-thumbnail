@@ -1,5 +1,8 @@
 import { ThumbnailData, Options } from "./types";
-const GetVideoThumbnail = (src: string, options?: Options): ThumbnailData => {
+const getVideoThumbnail = (
+  src: string,
+  options?: Options
+): Promise<ThumbnailData> => {
   if (!src) {
     throw Error("Please enter the video link address");
   }
@@ -17,28 +20,19 @@ const GetVideoThumbnail = (src: string, options?: Options): ThumbnailData => {
   videoElement.src = src;
   videoElement.setAttribute("crossOrigin", "anonymous");
   document.body.appendChild(videoElement);
-  videoElement.oncanplaythrough = () => {
-    /* 创建canvas节点 */
-    const canvasElement: HTMLCanvasElement = document.createElement("canvas");
-    canvasElement.width = width;
-    canvasElement.height = getCanvasElementHeight(height, videoElement);
-    const canvasFill = canvasElement.getContext("2d");
-    videoElement.play().then(() => {
-      setTimeout(() => {
-        canvasFill.drawImage(
-          videoElement,
-          0,
-          0,
-          canvasElement.width,
-          canvasElement.height
-        );
-        /*把canvas变成图片*/
-        const imgSrc = canvasElement.toDataURL("image/jpeg");
-        console.log(imgSrc);
-      }, time);
-    });
-    /*    return new Promise((resolve) => {
-      videoElement.onplaying = () => {
+
+  return new Promise((resolve, reject) => {
+    videoElement.oncanplaythrough = () => {
+      /* 创建canvas节点 */
+      const canvasElement: HTMLCanvasElement = document.createElement("canvas");
+      canvasElement.width = width;
+      const canvasElementHeight: number = getCanvasElementHeight(
+        height,
+        videoElement
+      );
+      canvasElement.height = canvasElementHeight;
+      const canvasFill = canvasElement.getContext("2d");
+      videoElement.play().then(() => {
         setTimeout(() => {
           canvasFill.drawImage(
             videoElement,
@@ -47,19 +41,18 @@ const GetVideoThumbnail = (src: string, options?: Options): ThumbnailData => {
             canvasElement.width,
             canvasElement.height
           );
-          /!* 把canvas变成图片 *!/
+          /*把canvas变成图片*/
           const imgSrc = canvasElement.toDataURL("image/jpeg");
-          resolve(imgSrc);
+          resolve({
+            thumbnailSrc: imgSrc,
+            thumbnailTime: time,
+            thumbnailWidth: width + "px",
+            thumbnailHeight: canvasElementHeight + "px",
+          });
         }, time);
-      };
-    });*/
-  };
-
-  return {
-    thumbnailSrc: "",
-    thumbnailTime: 0,
-    thumbnailWidth: "1920px",
-  };
+      });
+    };
+  });
 };
 
 const getCanvasElementHeight = (
@@ -72,33 +65,4 @@ const getCanvasElementHeight = (
   return videoElement.offsetHeight;
 };
 
-export default GetVideoThumbnail;
-
-/*const getVideoPreviewImg = (url, width, height) => {
-  width = width || 90;
-  height = height || 90;
-  /!* 创建视频dom节点 *!/
-  let node = document.createElement("video");
-  node.style.width = `${width}px`;
-  node.style.height = `${height}px`;
-  /!* 自动播放 *!/
-  node.autoplay = true;
-  node.src = url;
-  node.setAttribute("crossOrigin", "anonymous");
-  /!* 创建canvas节点 *!/
-  let canvasNode = document.createElement("canvas");
-  canvasNode.width = width;
-  canvasNode.height = height;
-  const canvasFill = canvasNode.getContext("2d");
-  /!* 把视频变成canvas *!/
-  return new Promise((resolve) => {
-    node.onplaying = () => {
-      setTimeout(() => {
-        canvasFill.drawImage(node, 0, 0, canvasNode.width, canvasNode.height);
-        /!* 把canvas变成图片 *!/
-        const imgSrc = canvasNode.toDataURL("image/jpeg");
-        resolve(imgSrc);
-      }, 800);
-    };
-  });
-};*/
+export default getVideoThumbnail;
