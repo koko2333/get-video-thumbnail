@@ -11,19 +11,26 @@ const getVideoThumbnail = (
       width: 1920,
       time: 1,
     },
-    ...options,
+    ...(options || {}),
   };
   const { width, height, time } = options;
   /* 创建视频dom节点 */
   const videoElement: HTMLVideoElement = document.createElement("video");
   videoElement.style.visibility = "hidden";
+  videoElement.style.position = "fixed";
+  videoElement.style.left = "0";
+  videoElement.style.top = "0";
   videoElement.style.width = `${width}px`;
   videoElement.style.height = height ? `${height}px` : "auto";
   videoElement.muted = true;
   videoElement.src = src;
   videoElement.currentTime = time;
   videoElement.setAttribute("crossOrigin", "anonymous");
-  document.body.appendChild(videoElement);
+  if (document.body) {
+    document.body.appendChild(videoElement);
+  } else {
+    throw Error("need body element");
+  }
 
   return new Promise((resolve, reject) => {
     videoElement.oncanplaythrough = () => {
